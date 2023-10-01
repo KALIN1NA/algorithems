@@ -20,12 +20,12 @@ CONST
   
 VAR
   Expressions: ARRAY OF ExpressionOfStr;
-  Line, CurrLine, Expression: STRING;
+  Line, Expression: STRING;
   CurrMax, CurrInd: INTEGER;
   MaxExprValue, MaxExprIndex: INTEGER; 
+  Count1: INTEGER;
   MaxAbVal: INTEGER;
   StrAbMax: STRING;
-  CountInd, ExprCount: INTEGER;
 
 FUNCTION CalculateExpression(Expr: ExpressionOfStr): INTEGER; {CalculateExpression}
 BEGIN
@@ -39,17 +39,6 @@ BEGIN
   END
 END; {CalculateExpression}
 
-PROCEDURE SaveExpression;
-BEGIN
-  FOR W:INTEGER := 0 TO High(Expressions) 
-  DO
-    BEGIN
-      Expression := Expression + IntToStr(Expressions[W].ValueOfOperand1) + ' ';
-      Expression := Expression + Expressions[W].ValueOfOperator + ' ';
-      Expression := Expression + IntToStr(Expressions[W].ValueOfOperand2);
-    END
-END;
-
 PROCEDURE FindMax(VAR MaxV: INTEGER);
 BEGIN
   IF MaxV > MaxAbVal
@@ -57,12 +46,14 @@ BEGIN
     BEGIN
       MaxAbVal := MaxV;
       StrAbMax := '';
-      StrAbMax := Copy(CurrLine, 1, Length(CurrLine));
-      SaveExpression
+      StrAbMax := Line;
+      Expression := Expressions[Count1].ValueOfOperand1 + ' ' + Expressions[Count1].ValueOfOperator + ' ' + Expressions[Count1].ValueOfOperand2;
+      INC(Count1);
+      writeln(Count1)
     END
 END;
 
-PROCEDURE CalculatingValues;
+PROCEDURE CalculatingValues(VAR ExprCount: INTEGER);
 VAR
   CurValue: INTEGER;
 BEGIN {CalculatingValues}   
@@ -83,12 +74,14 @@ END; {CalculatingValues}
 PROCEDURE SearchForExpressions(VAR InFile: TEXT);
 VAR 
   I, J, Len: INTEGER;
+  ExprCount: INTEGER;
 BEGIN {SearchForExpressions}
   I := 1;
   Len := 0;
   J := 0;
+  ExprCount := 0;
+  Count1 := 0;
   READLN(InFile, Line);
-  CurrLine := Copy(Line, 1, Length(Line));
   Len := Length(Line);
   SetLength(Expressions, MaxLineLen DIV MaxExprLen);
   WHILE I <= Len 
@@ -117,7 +110,7 @@ BEGIN {SearchForExpressions}
                   Expressions[ExprCount].ValueOfOperand2 := StrToInt(Copy(Line, I, J - I));
                   INC(ExprCount);
                   I := J;
-                  CalculatingValues
+                  CalculatingValues(ExprCount)
                 END          
             END
         END;
@@ -132,7 +125,7 @@ BEGIN {OutputOfTheResult}
     BEGIN
       WRITELN(OutFile, 'Строка, в которой найдено выражение: ', StrAbMax);
       WRITELN(OutFile, 'Максимальное значение выражения: ', MaxAbVal);
-      WRITELN(OutFile, 'Выражение: ', SaveExpression);
+      WRITELN(OutFile, 'Выражение: ', Expression);
     END
   ELSE
     WRITELN('В строке не найдено выражений')
@@ -141,10 +134,8 @@ END; {OutputOfTheResult}
 BEGIN
   MaxExprIndex := -1;
   MaxExprValue := -2000000;
-  ExprCount := 0;
-  Line := '';
   MaxAbVal := -2000001;
-  CurrLine := '';
-  CountInd := 0;
+  Line := '';
+  StrAbMax := '';
   Expression := ''
 END.
